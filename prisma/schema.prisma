@@ -1,0 +1,27 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Student {
+  id        String   @id @default(cuid())
+  studentIdentifier String
+  name      String
+  qrCode    String   @unique
+  routenumber String
+  rides     Ride[]
+}
+
+model Ride {
+  id        String   @id @default(cuid())
+  date      DateTime
+  didRide   Boolean
+  studentId String
+  student   Student  @relation(fields: [studentId], references: [id])
+}
+
+
