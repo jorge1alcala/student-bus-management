@@ -8,6 +8,7 @@ export async function GET(request: Request) {
   const page = Number.parseInt(searchParams.get("page") || "1");
   const limit = Number.parseInt(searchParams.get("limit") || "10");
   const search = searchParams.get("search") || "";
+  const studentIdentifier = searchParams.get("searchById") || "";
   const routenumber = searchParams.get("routenumber") || "";
   const notRiding = searchParams.get("notRiding") === "true";
   const skip = (page - 1) * limit;
@@ -18,8 +19,15 @@ export async function GET(request: Request) {
     where.name = { contains: search, mode: "insensitive" };
   }
 
+  if (studentIdentifier) {
+    where.studentIdentifier = {
+      contains: studentIdentifier,
+      mode: "insensitive"
+    };
+  }
+
   if (routenumber) {
-    where.routenumber = { contains: search, mode: "insensitive" };
+    where.routenumber = { contains: routenumber, mode: "insensitive" };
   }
 
   if (notRiding) {

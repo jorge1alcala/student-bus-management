@@ -5,18 +5,26 @@ const prisma = new PrismaClient();
 
 export async function POST(req: NextRequest) {
   try {
-    const { studentId, didRide } = await req.json();
+    const { studentIdentifier, didRide } = await req.json();
 
-    if (!studentId || typeof didRide !== "boolean") {
+    if (!studentIdentifier || typeof didRide !== "boolean") {
       return NextResponse.json(
         { error: "Invalid request body" },
         { status: 400 }
       );
     }
 
+    const student = await prisma.student.findUnique({
+      where: { studentIdentifier }
+    });
+
+    if (!student) {
+      return NextResponse.json({ error: "Student not found" }, { status: 404 });
+    }
+
     const ride = await prisma.ride.create({
       data: {
-        studentId,
+        studentId: student.id,
         didRide,
         date: new Date()
       }

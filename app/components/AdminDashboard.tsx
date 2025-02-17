@@ -1,11 +1,11 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useReactToPrint } from "react-to-print";
 import { QRCodeCanvas } from "qrcode.react";
 
 interface Student {
-  studentId: string;
+  studentIdentifier: string;
   id: string;
   name: string;
   qrCode: string;
@@ -22,6 +22,8 @@ export default function AdminDashboard() {
   const [searchById, setSearchById] = useState(""); // New state for searching by student ID
   const [routenumber, setRoutenumber] = useState(""); // Changed to lowercase
   const [notRiding, setNotRiding] = useState(false);
+
+  const reportRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     fetchStudents();
@@ -57,17 +59,17 @@ export default function AdminDashboard() {
   };
 
   const handlePrint = useReactToPrint({
-    content: () => document.getElementById("report") as any
+    content: () => reportRef.current
   });
 
-  const simulateScanner = async (studentId: string) => {
+  const simulateScanner = async (studentIdentifier: string) => {
     try {
       const res = await fetch("/api/rides", {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
         },
-        body: JSON.stringify({ studentId, didRide: true })
+        body: JSON.stringify({ studentIdentifier, didRide: true })
       });
       if (!res.ok) {
         throw new Error(`HTTP error! status: ${res.status}`);
@@ -114,13 +116,13 @@ export default function AdminDashboard() {
           Not Riding
         </label>
         <button
-          onClick={() => handlePrint()}
+          onClick={handlePrint}
           className="bg-blue-500 text-white px-4 py-2 rounded"
         >
           Print Report
         </button>
       </div>
-      <div id="report">
+      <div id="report" ref={reportRef}>
         <table className="w-full border-collapse border border-gray-300">
           <thead>
             <tr className="bg-gray-100">
@@ -137,7 +139,7 @@ export default function AdminDashboard() {
               <tr key={student.id}>
                 <td className="border border-gray-300 p-2">{student.name}</td>
                 <td className="border border-gray-300 p-2">
-                  {student.studentId}
+                  {student.studentIdentifier}
                 </td>
                 <td className="border border-gray-300 p-2">
                   {student.routenumber}
@@ -150,7 +152,7 @@ export default function AdminDashboard() {
                 </td>
                 <td className="border border-gray-300 p-2">
                   <button
-                    onClick={() => simulateScanner(student.studentId)}
+                    onClick={() => simulateScanner(student.studentIdentifier)}
                     className="bg-green-500 text-white px-4 py-2 rounded"
                   >
                     Simulate Scanner
